@@ -20,13 +20,33 @@ const DEFAULT_EMPTY_ROUTING_NAME = 'none';
 const EnvironmentStore = Reflux.createStore({
   init() {
     this.items = [];
+    this.hidden = [];
+    this.active = [];
     this.defaultEnvironment = null;
     this.listenTo(EnvironmentActions.loadData, this.loadInitialData);
+    this.listenTo(EnvironmentActions.loadActiveData, this.loadActiveData);
+    this.listenTo(EnvironmentActions.loadHiddenData, this.loadHiddenData);
     this.listenTo(ProjectActions.setActive, this.onSetActiveProject);
   },
 
   loadInitialData(items) {
-    this.items = items.map(item => ({
+    this.loadData('items', items);
+
+    // Update the default environment in the latest context store
+    setDefaultEnvironment(this.getDefault());
+  },
+
+  loadHiddenData(items) {
+    this.loadData('hidden', items);
+  },
+
+  loadActiveData(items) {
+    this.loadData('active', items);
+  },
+
+  loadData(key, items) {
+    items = items || [];
+    this[key] = items.map(item => ({
       id: item.id,
       name: item.name,
       get displayName() {
@@ -36,10 +56,7 @@ const EnvironmentStore = Reflux.createStore({
         return item.name || DEFAULT_EMPTY_ROUTING_NAME;
       },
     }));
-    this.trigger(this.items, 'initial');
-
-    // Update the default environment in the latest context store
-    setDefaultEnvironment(this.getDefault());
+    this.trigger(this[key]);
   },
 
   getByName(name) {
@@ -48,6 +65,14 @@ const EnvironmentStore = Reflux.createStore({
 
   getAll() {
     return this.items;
+  },
+
+  getActive() {
+    return this.active;
+  },
+
+  getHidden() {
+    return this.hidden;
   },
 
   onSetActiveProject(project) {
