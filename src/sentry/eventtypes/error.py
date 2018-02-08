@@ -26,5 +26,5 @@ class ErrorEvent(BaseEvent):
             return metadata['type']
         return u'{}: {}'.format(
             metadata['type'],
-            truncatechars(metadata['value'].splitlines()[0], 100),
+            metadata['value'].splitlines()[0],
         )
